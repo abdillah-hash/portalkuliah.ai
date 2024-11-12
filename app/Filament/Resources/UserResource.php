@@ -9,6 +9,7 @@ use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -68,11 +69,13 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('companies.name')
+                    ->label('Company'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Name'),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email'),
-            ])
+                    ])
             ->filters([
                 //
             ])

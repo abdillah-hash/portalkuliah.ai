@@ -67,6 +67,9 @@ class GroupsResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('companies.name')
+                ->label('Company'),
+
                 Tables\Columns\TextColumn::make('name')
                     ->label('Group Name')
                     ->searchable(),
@@ -76,9 +79,6 @@ class GroupsResource extends Resource
 
                 ImageColumn::make('image')
                 ->label('Image'),
-
-                Tables\Columns\TextColumn::make('companies.name')
-                    ->label('Company'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created At')

@@ -66,6 +66,8 @@ class ModulesResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('companies.name')
+                    ->label('Company'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Module Name')
                     ->sortable()
@@ -84,9 +86,6 @@ class ModulesResource extends Resource
                     ->sortable()
                     ->url(fn($record) => $record->video)
                     ->openUrlInNewTab(),
-
-                Tables\Columns\TextColumn::make('companies.name')
-                    ->label('Company'),
             ])
             ->filters([
                 //
