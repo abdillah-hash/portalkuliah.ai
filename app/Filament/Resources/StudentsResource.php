@@ -70,7 +70,7 @@ class StudentsResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('account_id')
-                    ->label('Name'),
+                    ->label('ID Account'),
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Mobile Phone Number'),
                 Tables\Columns\TextColumn::make('born_year')
@@ -83,6 +83,7 @@ class StudentsResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

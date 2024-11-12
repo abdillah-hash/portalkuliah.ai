@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
+use App\Models\Companies;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
@@ -16,6 +17,11 @@ use Filament\Tables\Table;
 use Filament\Tables\View\TablesRenderHook;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\HtmlString;
+use Illuminate\Validation\Rules\Password;
+use NunoMaduro\Collision\Adapters\Phpunit\State;
 
 class UserResource extends Resource
 {
@@ -30,19 +36,30 @@ class UserResource extends Resource
         return $form
             ->schema([
                 TextInput::make('name')
-                ->required()
-                ->label('Nama'),
-                
+                    ->required()
+                    ->label('Nama'),
+
                 TextInput::make('email')
-                ->email() // Menentukan tipe input email
-                ->required()
-                ->unique() // Menjadikan email unik dalam tabel
-                ->label('Email'),
+                    ->email() 
+                    ->required()
+                    ->label('Email'),
+
+                Forms\Components\Select::make('companies_id')
+                    ->label('Name Company')
+                    ->required()
+                    ->searchable()
+                    ->options(Companies::all()->pluck('name', 'id')),
                 
-            TextInput::make('password')
-                ->password() // Tipe input password
-                ->required()
-                ->label('Password'),
+                Forms\Components\TextInput::make('password')
+                    ->label(fn(string $context) => $context === 'create' ? 'Password' : 'New Password')
+                    ->password()
+                    ->dehydrated(fn($state) => filled($state))
+                    ->required(fn($record) => is_null($record))
+                    ->afterStateUpdated(function ($state, Forms\Set $set) {
+                       
+                        $set('password', Hash::make($state));
+
+                    }), 
 
             ]);
     }
@@ -52,17 +69,16 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                ->label('Name'),
+                    ->label('Name'),
                 Tables\Columns\TextColumn::make('email')
-                ->label('Email'),
-                Tables\Columns\TextColumn::make('password')
-                ->label('Password'),
+                    ->label('Email'),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -84,4 +100,7 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
         ];
     }
+    
 }
+
+

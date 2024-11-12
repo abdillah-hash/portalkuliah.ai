@@ -17,7 +17,7 @@ class Modules extends Model
     }
 
     public function tasks()
-    {
+    {   
         return $this->hasMany(Tasks::class);
     }
 }

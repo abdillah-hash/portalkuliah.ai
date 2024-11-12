@@ -4,10 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ModulesResource\Pages;
 use App\Filament\Resources\ModulesResource\RelationManagers;
+use App\Models\Companies;
 use App\Models\Modules;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Illuminate\Support\Str;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,21 +22,27 @@ class ModulesResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-view-columns';
 
-    protected static ?string $navigationGroup = 'Education Management';	
+    protected static ?string $navigationGroup = 'Education Management';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('name')
-                    ->required()
+                Forms\Components\TextInput::make('name')
                     ->label('Module Name')
-                    ->maxLength(255),
-
-                TextInput::make('slug')
+                    ->live(onBlur: true)
                     ->required()
+                    ->afterStateUpdated(function ($state, Forms\Set $set) {
+                        $set('slug', Str::slug($state));
+                    }),
+
+                Forms\Components\TextInput::make('slug')
                     ->label('Slug')
-                    ->maxLength(255),
+                    ->required()
+                    ->disabled()
+                    ->dehydrated()
+                    ->maxLength(255)
+                    ->unique(Modules::class, 'slug', ignoreRecord: true),
 
                 TextInput::make('total_level')
                     ->required()
@@ -43,13 +51,14 @@ class ModulesResource extends Resource
 
                 TextInput::make('video')
                     ->required()
-                    ->label('Video Link')
-                    ->url() 
-                    ->maxLength(255),
-
-                TextInput::make('companies_id')
-                    ->required()
-                    ->label('Company'),
+                    ->label('URL Video')
+                    ->url(),
+                    
+                Forms\Components\Select::make('companies_id')
+                    ->searchable()
+                    ->options(Companies::all()->pluck('name', 'id'))
+                    ->label('Company Name')
+                    ->required(),
             ]);
     }
 
@@ -58,16 +67,23 @@ class ModulesResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Module Name'),
+                    ->label('Module Name')
+                    ->sortable()
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('slug')
-                    ->label('Slug'),
+                    ->label('Slug')
+                    ->sortable()
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('total_level')
                     ->label('Total Level'),
 
                 Tables\Columns\TextColumn::make('video')
-                    ->label('Video ID'),
+                    ->label('URL Video')
+                    ->sortable()
+                    ->url(fn($record) => $record->video)
+                    ->openUrlInNewTab(),
 
                 Tables\Columns\TextColumn::make('companies.name')
                     ->label('Company'),
@@ -77,6 +93,7 @@ class ModulesResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

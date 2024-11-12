@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\GroupsResource\Pages;
 use App\Filament\Resources\GroupsResource\RelationManagers;
+use App\Models\Companies;
 use App\Models\Groups;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
@@ -12,6 +13,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -44,7 +46,7 @@ class GroupsResource extends Resource
                 ]),
 
                 FileUpload::make('image')
-                    // ->required()
+                    ->required()
                     ->label('Image')
                     ->directory('groups/images')
                     ->image(),
@@ -53,9 +55,11 @@ class GroupsResource extends Resource
                     ->label('Description')
                     ->maxLength(500),
 
-                TextInput::make('companies_id')
+                Select::make('companies_id')
                     ->required()
-                    ->label('Company'),
+                    ->label('Company')
+                    ->options(Companies::all()->pluck('name', 'id'))
+                    ->searchable(),
             ]);
     }
 
@@ -70,6 +74,9 @@ class GroupsResource extends Resource
                 Tables\Columns\TextColumn::make('tag')
                     ->label('Tag'),
 
+                ImageColumn::make('image')
+                ->label('Image'),
+
                 Tables\Columns\TextColumn::make('companies.name')
                     ->label('Company'),
 
@@ -82,6 +89,7 @@ class GroupsResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
